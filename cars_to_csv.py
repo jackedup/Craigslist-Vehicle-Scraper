@@ -139,9 +139,9 @@ def parseVehicleLinks(urllist):
         # print(year + " " + str(entry[0]["model"]).lower())
         # df = pd.concat([pd.DataFrame(entry), df])
         # df.to_csv("./cars.csv",index=False)
-def getLinkList(driver):
+def getCraigslistLinkList(driver):
     # pass the defined options and service objects to initialize the web driver
-    url = "https://denver.craigslist.org/search/cta#search=1~list~0~0"
+    url = "https://denver.craigslist.org/search/cta?purveyor=owner#search=1~list~0~0"
     
     driver.get(url)
     time.sleep(3)
@@ -154,6 +154,34 @@ def getLinkList(driver):
         linklist.append(result.find_element(By.CLASS_NAME, "titlestring").get_attribute("href"))
 
     return linklist
+def getFacebookLinkList(driver):
+    # pass the defined options and service objects to initialize the web driver
+    url = "https://www.facebook.com/marketplace/denver/vehicles?sellerType=individual&exact=false"
+    
+    driver.get(url)
+    time.sleep(3)
+    print("done")
+    driver.save_screenshot("screen.png")
+    result_div = driver.find_elements(By.TAG_NAME, "a")
+    new_res = []
+    for link_element in result_div:
+        if link_element.get_attribute("href")[:42] == "https://www.facebook.com/marketplace/item/":
+            new_res.append(link_element)
+    for item in new_res:
+        print("==========")
+        splititem = item.text.split("\n")
+        print("price: " + splititem[0])
+        if(splititem[1][:1] == "$"):
+            del splititem[1]
+        print("car name: " + splititem[1])
+        print("location: " + splititem[2])
+        if len(splititem) > 3:
+            print("miles: " + splititem[3])
+        # print(item.text)
+        print("==========")
+
+    # return linklist
+    
 
 if __name__ == "__main__":
         # start by defining the options
@@ -167,6 +195,6 @@ if __name__ == "__main__":
     chrome_service = Service(chrome_path)
     driver = Chrome(options=options, service=chrome_service)
     driver.implicitly_wait(3)
-    linklist = getLinkList(driver)
-    parseVehicleLinks(linklist)
+    linklist = getFacebookLinkList(driver)
+    # parseVehicleLinks(linklist)
     driver.quit()
